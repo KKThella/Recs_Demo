@@ -1,1 +1,490 @@
-<!doctype html><html lang="en"><head><meta charset="utf-8"/><link rel="icon" href="/favicon.ico"/><meta name="viewport" content="width=device-width,initial-scale=1"/><meta name="theme-color" content="#000000"/><meta name="description" content="Web site created using create-react-app"/><link rel="apple-touch-icon" href="/logo192.png"/><link rel="manifest" href="/manifest.json"/><title>iHerb Recommendations Demo</title><script defer="defer" src="/static/js/main.a2c355de.js"></script><link href="/static/css/main.bcf42371.css" rel="stylesheet"></head><body><noscript>You need to enable JavaScript to run this app.</noscript><div id="root"></div></body></html>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>iHerb AI Recs Demo</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<style>
+:root {
+  --bg: #0a0f14;
+  --surface: #111820;
+  --surface2: #182028;
+  --border: #1e2d3d;
+  --text: #e2eaf3;
+  --text2: #6b8399;
+  --accent: #00d084;
+  --accent2: #00a86b;
+  --warn: #f0a500;
+  --danger: #ff5a5a;
+  --radius: 12px;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;font-size:14px;line-height:1.6;min-height:100vh;}
+
+/* KEY SCREEN */
+.key-screen{display:flex;align-items:center;justify-content:center;min-height:100vh;padding:20px;}
+.key-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:48px 40px;max-width:460px;width:100%;text-align:center;box-shadow:0 0 60px rgba(0,208,132,0.06);}
+.logo{font-family:'DM Serif Display',serif;font-size:26px;margin-bottom:20px;}
+.logo span{color:var(--accent);}
+.key-card h1{font-family:'DM Serif Display',serif;font-size:20px;margin-bottom:8px;}
+.key-card p{color:var(--text2);font-size:13px;margin-bottom:28px;line-height:1.6;}
+.key-card code{background:var(--surface2);padding:2px 6px;border-radius:4px;font-size:11px;color:var(--accent);}
+.key-row{display:flex;gap:8px;}
+.key-row input{flex:1;background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:11px 14px;color:var(--text);font-size:14px;font-family:inherit;transition:border-color .2s;}
+.key-row input:focus{outline:none;border-color:var(--accent);}
+.key-row button{background:var(--accent2);color:#fff;border:none;border-radius:10px;padding:11px 22px;cursor:pointer;font-weight:600;font-size:14px;transition:background .2s;}
+.key-row button:hover{background:var(--accent);}
+
+/* APP */
+.app{max-width:1100px;margin:0 auto;padding:28px 20px;}
+.app-header{display:flex;align-items:baseline;gap:16px;margin-bottom:32px;border-bottom:1px solid var(--border);padding-bottom:22px;}
+.header-sub{color:var(--text2);font-size:13px;}
+.error-banner{background:#1f0f0f;border:1px solid var(--danger);color:var(--danger);border-radius:var(--radius);padding:11px 16px;margin-bottom:16px;font-size:13px;}
+.app-grid{display:grid;grid-template-columns:340px 1fr;gap:18px;align-items:start;}
+.col-left,.col-right{display:flex;flex-direction:column;gap:14px;}
+
+/* CARDS */
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:24px;}
+.card-title{font-family:'DM Serif Display',serif;font-size:17px;margin-bottom:4px;}
+.card-sub{color:var(--text2);font-size:12px;margin-bottom:20px;}
+
+/* FORM */
+.field{margin-bottom:15px;}
+.field label{display:block;font-size:11px;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px;}
+.field input,.field select{width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:9px 12px;color:var(--text);font-size:14px;font-family:inherit;transition:border-color .2s;}
+.field input:focus,.field select:focus{outline:none;border-color:var(--accent);}
+.field select option{background:var(--surface2);}
+.optional{font-weight:300;text-transform:none;letter-spacing:0;}
+.chip-row{display:flex;flex-wrap:wrap;gap:6px;}
+.chip{background:var(--surface2);border:1px solid var(--border);border-radius:20px;padding:4px 13px;font-size:12px;color:var(--text2);cursor:pointer;transition:all .15s;font-family:inherit;}
+.chip:hover{border-color:var(--accent);color:var(--text);}
+.chip.on{background:rgba(0,208,132,0.1);border-color:var(--accent);color:var(--accent);}
+.submit-btn{width:100%;background:var(--accent2);color:#fff;border:none;border-radius:10px;padding:13px;font-size:14px;font-weight:600;cursor:pointer;margin-top:8px;transition:background .2s;font-family:inherit;}
+.submit-btn:hover:not(:disabled){background:var(--accent);}
+.submit-btn:disabled{opacity:.45;cursor:not-allowed;}
+
+/* SPINNER */
+.spinner{display:inline-block;width:15px;height:15px;border:2px solid rgba(255,255,255,.25);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite;vertical-align:middle;}
+@keyframes spin{to{transform:rotate(360deg);}}
+
+/* RECS */
+.recs-header{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:6px;}
+.strategy-toggle{display:flex;gap:4px;}
+.strat-btn{background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:4px 10px;font-size:11px;color:var(--text2);cursor:pointer;font-family:inherit;transition:all .15s;}
+.strat-btn:hover{border-color:var(--accent);color:var(--text);}
+.strat-btn.on{background:rgba(0,208,132,0.1);border-color:var(--accent);color:var(--accent);}
+.strategy-note{font-size:11px;color:var(--text2);margin-bottom:16px;font-style:italic;}
+.recs-list{display:flex;flex-direction:column;gap:10px;}
+.rec-card{background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:14px 16px;cursor:pointer;transition:border-color .2s;}
+.rec-card:hover,.rec-card.open{border-color:var(--accent);}
+.rec-top{display:flex;align-items:center;gap:12px;}
+.rec-rank{font-family:'DM Serif Display',serif;font-size:22px;color:var(--text2);width:26px;flex-shrink:0;}
+.rec-info{flex:1;min-width:0;}
+.rec-name{font-weight:600;font-size:14px;margin-bottom:2px;}
+.rec-reason{font-size:12px;color:var(--text2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.rec-score{position:relative;width:44px;height:44px;flex-shrink:0;}
+.rec-score svg{width:100%;height:100%;}
+.rec-score span{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:600;color:var(--accent);}
+.rec-detail{margin-top:12px;padding-top:12px;border-top:1px solid var(--border);animation:fadeIn .2s ease;}
+@keyframes fadeIn{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:translateY(0)}}
+.rec-desc{font-size:13px;color:var(--text);margin-bottom:10px;line-height:1.6;}
+.disclaimer{font-size:12px;color:var(--warn);background:rgba(240,165,0,0.08);border-radius:6px;padding:7px 10px;margin-bottom:10px;}
+.rec-meta{display:flex;flex-wrap:wrap;gap:6px;}
+.meta-tag{font-size:11px;background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:2px 10px;color:var(--text2);}
+.low-conf{border-color:var(--warn);color:var(--warn);}
+
+/* SKELETONS */
+@keyframes shimmer{0%{opacity:.3}50%{opacity:.6}100%{opacity:.3}}
+.skel-head{height:26px;background:var(--surface2);border-radius:6px;width:55%;margin-bottom:18px;animation:shimmer 1.4s ease infinite;}
+.skel-card{height:70px;background:var(--surface2);border-radius:10px;animation:shimmer 1.4s ease infinite;margin-bottom:10px;}
+
+/* CHAT */
+.chat-row{display:flex;gap:8px;margin-bottom:12px;}
+.chat-input{flex:1;background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:10px 14px;color:var(--text);font-size:14px;font-family:inherit;transition:border-color .2s;}
+.chat-input:focus{outline:none;border-color:var(--accent);}
+.chat-send{background:var(--accent2);color:#fff;border:none;border-radius:10px;padding:10px 18px;cursor:pointer;font-size:16px;transition:background .2s;}
+.chat-send:hover:not(:disabled){background:var(--accent);}
+.chat-send:disabled{opacity:.45;cursor:not-allowed;}
+.chat-reply{background:var(--surface2);border:1px solid var(--border);border-left:3px solid var(--accent);border-radius:10px;padding:13px 15px;animation:fadeIn .3s ease;}
+.chat-badge{font-size:10px;font-weight:600;color:var(--accent);text-transform:uppercase;letter-spacing:.08em;display:block;margin-bottom:6px;}
+.chat-reply p{font-size:13px;line-height:1.6;}
+.chat-note{font-size:11px;color:var(--text2);margin-top:8px;font-style:italic;}
+
+/* PM PANEL */
+.pm-tabs{display:flex;gap:4px;margin-bottom:16px;}
+.pm-tab{background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:5px 13px;font-size:11px;font-weight:600;color:var(--text2);cursor:pointer;letter-spacing:.04em;font-family:inherit;transition:all .15s;}
+.pm-tab:hover{border-color:var(--accent);color:var(--text);}
+.pm-tab.on{background:rgba(0,208,132,0.1);border-color:var(--accent);color:var(--accent);}
+.pm-row{display:flex;gap:14px;padding:10px 0;border-bottom:1px solid var(--border);}
+.pm-row:last-child{border-bottom:none;}
+.pm-label{font-size:11px;color:var(--text2);min-width:95px;padding-top:2px;flex-shrink:0;}
+.pm-value{font-size:13px;font-weight:600;color:var(--text);margin-bottom:2px;}
+.pm-detail{font-size:12px;color:var(--text2);line-height:1.5;}
+</style>
+</head>
+<body>
+
+<!-- KEY SCREEN -->
+<div id="keyScreen" class="key-screen">
+  <div class="key-card">
+    <div class="logo">iHerb <span>AI Recs</span></div>
+    <h1>Enter your Anthropic API Key</h1>
+    <p>Your key stays in this browser tab only — never stored or sent anywhere except the Anthropic API.<br/>Get yours at <code>console.anthropic.com</code></p>
+    <div class="key-row">
+      <input type="password" id="keyInput" placeholder="sk-ant-..." />
+      <button onclick="startApp()">Start →</button>
+    </div>
+  </div>
+</div>
+
+<!-- MAIN APP -->
+<div id="mainApp" class="app" style="display:none;">
+  <header class="app-header">
+    <div class="logo">iHerb <span>AI Recs</span></div>
+    <p class="header-sub">Personalized supplement discovery · Powered by generative AI</p>
+  </header>
+
+  <div id="errorBanner" class="error-banner" style="display:none;"></div>
+
+  <div class="app-grid">
+    <div class="col-left">
+      <!-- PROFILE FORM -->
+      <div class="card">
+        <h2 class="card-title">Your Health Profile</h2>
+        <p class="card-sub">Personalized to you — not a generic list.</p>
+        <div class="field">
+          <label>Age</label>
+          <input type="number" id="age" value="35" min="18" max="90"/>
+        </div>
+        <div class="field">
+          <label>Health Goals</label>
+          <div class="chip-row" id="goalChips"></div>
+        </div>
+        <div class="field">
+          <label>Diet</label>
+          <select id="diet">
+            <option>Omnivore</option><option>Vegetarian</option><option>Vegan</option>
+            <option>Keto</option><option>Paleo</option><option>Gluten-Free</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Restrictions / Current Meds <span class="optional">(optional)</span></label>
+          <input type="text" id="restrictions" placeholder="e.g. blood thinners, pregnant"/>
+        </div>
+        <button class="submit-btn" id="recsBtn" onclick="getRecs()">Get My Recommendations →</button>
+      </div>
+
+      <!-- CHAT -->
+      <div class="card">
+        <h2 class="card-title">Ask Anything</h2>
+        <p class="card-sub">e.g. "What's good for joint pain if I take blood thinners?"</p>
+        <div class="chat-row">
+          <input class="chat-input" id="chatInput" placeholder="Ask about a supplement, goal, or concern..."
+            onkeydown="if(event.key==='Enter') sendChat()"/>
+          <button class="chat-send" id="chatBtn" onclick="sendChat()">→</button>
+        </div>
+        <div id="chatReply" style="display:none;"></div>
+      </div>
+    </div>
+
+    <div class="col-right">
+      <!-- RECS PANEL -->
+      <div class="card" id="recsPanel" style="display:none;">
+        <div class="recs-header">
+          <h2 class="card-title">Your Recommendations</h2>
+          <div class="strategy-toggle" id="strategyToggle"></div>
+        </div>
+        <p class="strategy-note" id="strategyNote"></p>
+        <div id="recsList"></div>
+      </div>
+
+      <!-- PM PANEL -->
+      <div class="card" id="pmPanel" style="display:none;">
+        <h2 class="card-title">Product Thinking</h2>
+        <p class="card-sub">How I'd measure, test, and evolve this in production.</p>
+        <div class="pm-tabs">
+          <button class="pm-tab on" onclick="switchPM('kpis',this)">KPIS</button>
+          <button class="pm-tab" onclick="switchPM('ab',this)">A/B TEST</button>
+          <button class="pm-tab" onclick="switchPM('roadmap',this)">ROADMAP</button>
+        </div>
+        <div id="pmContent"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const API_URL = "https://api.anthropic.com/v1/messages";
+let API_KEY = "";
+let currentStrategy = "hybrid";
+let currentProfile = null;
+let recsCache = {};
+let expandedRec = null;
+
+const GOALS = ["Energy","Sleep","Stress","Immunity","Joint Health","Weight","Digestion","Focus"];
+let selectedGoals = new Set(["Energy","Sleep"]);
+
+const PM_DATA = {
+  kpis: [
+    {label:"Primary KPI", value:"Rec CTR", detail:"Click-through on recommended products — direct signal of relevance"},
+    {label:"Secondary KPI", value:"Add-to-Cart Lift", detail:"% increase vs. non-personalized baseline — conversion impact"},
+    {label:"Guardrail Metric", value:"Disclaimer Trigger Rate", detail:"If >5% of responses trigger medical flags, tighten the system prompt"},
+    {label:"Quality Gate", value:"Confidence Floor ≥50%", detail:"Recs below 50% confidence are suppressed — not shown to users"},
+  ],
+  ab: [
+    {label:"Hypothesis", value:"Hybrid filtering will outperform content-based by ≥10% on Add-to-Cart rate"},
+    {label:"Control", detail:"Content-based filtering (current baseline)"},
+    {label:"Variant", detail:"Hybrid filtering (collab + content)"},
+    {label:"Duration", detail:"2 weeks, 50/50 split"},
+    {label:"Success", detail:"p<0.05, ≥10% lift in add-to-cart"},
+  ],
+  roadmap: [
+    {label:"V2", detail:"Vector DB integration — move from prompt-based to embedding similarity"},
+    {label:"V3", detail:"Real-time signals — incorporate live browsing session into rec context"},
+    {label:"V4", detail:"Multi-locale personalization — adapt description tone by region"},
+    {label:"V5", detail:"Feedback loop — thumbs up/down feeds reranking model"},
+  ]
+};
+
+// Init chips
+function initChips() {
+  const container = document.getElementById('goalChips');
+  GOALS.forEach(g => {
+    const btn = document.createElement('button');
+    btn.className = 'chip' + (selectedGoals.has(g) ? ' on' : '');
+    btn.textContent = g;
+    btn.onclick = () => {
+      if (selectedGoals.has(g)) selectedGoals.delete(g);
+      else selectedGoals.add(g);
+      btn.className = 'chip' + (selectedGoals.has(g) ? ' on' : '');
+    };
+    container.appendChild(btn);
+  });
+}
+
+function initStrategyToggle() {
+  const container = document.getElementById('strategyToggle');
+  ['hybrid','content-based','collaborative'].forEach(s => {
+    const btn = document.createElement('button');
+    btn.className = 'strat-btn' + (s === currentStrategy ? ' on' : '');
+    btn.textContent = s;
+    btn.onclick = () => switchStrategy(s);
+    container.appendChild(btn);
+  });
+}
+
+function startApp() {
+  const key = document.getElementById('keyInput').value.trim();
+  if (!key) return;
+  API_KEY = key;
+  document.getElementById('keyScreen').style.display = 'none';
+  document.getElementById('mainApp').style.display = 'block';
+  initChips();
+  initStrategyToggle();
+  renderPM('kpis');
+}
+
+function showError(msg) {
+  const el = document.getElementById('errorBanner');
+  el.textContent = '⚠ ' + msg;
+  el.style.display = 'block';
+  setTimeout(() => el.style.display = 'none', 5000);
+}
+
+function sanitize(input) {
+  return input.replace(/(\bignore\b|\bforget\b|\bsystem\b|\bprompt\b)/gi, '').slice(0, 300);
+}
+
+function hasMedicalRisk(text) {
+  return /\b(treat|cure|diagnose|prescription|medication|disease)\b/i.test(text);
+}
+
+async function callClaude(system, user, maxTokens) {
+  const res = await fetch(API_URL, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'x-api-key': API_KEY,
+      'anthropic-version': '2023-06-01',
+      'anthropic-dangerous-direct-browser-access': 'true'
+    },
+    body: JSON.stringify({
+      model: 'claude-haiku-4-5-20251001',
+      max_tokens: maxTokens,
+      system: system,
+      messages: [{role: 'user', content: user}]
+    })
+  });
+  if (!res.ok) {
+    const err = await res.json();
+    throw new Error(err.error?.message || 'API error ' + res.status);
+  }
+  const data = await res.json();
+  return data.content[0].text;
+}
+
+async function getRecs(overrideProfile) {
+  const profile = overrideProfile || {
+    age: document.getElementById('age').value,
+    goals: [...selectedGoals].join(', '),
+    diet: document.getElementById('diet').value,
+    restrictions: document.getElementById('restrictions').value
+  };
+  currentProfile = profile;
+
+  const cacheKey = JSON.stringify({profile, strategy: currentStrategy});
+  if (recsCache[cacheKey]) {
+    renderRecs(recsCache[cacheKey]);
+    return;
+  }
+
+  setRecsLoading(true);
+  document.getElementById('errorBanner').style.display = 'none';
+
+  const system = `You are an iHerb supplement recommendation engine. Only recommend supplements and wellness products. Never diagnose, treat, or cure any condition. Respond ONLY with valid JSON, no markdown, no backticks. Use ${currentStrategy} filtering logic. Return exactly: {"recs":[{"name":string,"matchScore":number 0-100,"reason":string 1 sentence,"description":string 2 sentences personalized to user,"confidence":number 0-100,"strategy":string}]} with exactly 4 items.`;
+  const user = `User: age ${profile.age}, goals: ${profile.goals}, diet: ${profile.diet}, restrictions: ${profile.restrictions || 'none'}. Generate personalized supplement recommendations.`;
+
+  try {
+    const raw = await callClaude(system, user, 900);
+    const clean = raw.replace(/```json|```/g, '').trim();
+    const data = JSON.parse(clean);
+    recsCache[cacheKey] = data.recs;
+    renderRecs(data.recs);
+  } catch(e) {
+    showError('Failed to fetch recommendations. Check your API key: ' + e.message);
+  } finally {
+    setRecsLoading(false);
+  }
+}
+
+function setRecsLoading(loading) {
+  const btn = document.getElementById('recsBtn');
+  const panel = document.getElementById('recsPanel');
+  panel.style.display = 'block';
+  btn.disabled = loading;
+  btn.innerHTML = loading ? '<span class="spinner"></span>' : 'Get My Recommendations →';
+
+  if (loading) {
+    document.getElementById('pmPanel').style.display = 'none';
+    document.getElementById('recsList').innerHTML = `
+      <div class="skel-head"></div>
+      <div class="skel-card"></div><div class="skel-card" style="animation-delay:.1s"></div>
+      <div class="skel-card" style="animation-delay:.2s"></div><div class="skel-card" style="animation-delay:.3s"></div>`;
+  }
+}
+
+function renderRecs(recs) {
+  const notes = {
+    'hybrid': 'Combining your profile attributes + behavior patterns from similar users.',
+    'content-based': 'Matching purely on your stated goals, diet, and restrictions.',
+    'collaborative': 'Based on users with similar profiles and purchase history.'
+  };
+  document.getElementById('strategyNote').textContent = notes[currentStrategy];
+
+  const list = document.getElementById('recsList');
+  list.innerHTML = '';
+  recs.forEach((rec, i) => {
+    const card = document.createElement('div');
+    card.className = 'rec-card' + (expandedRec === i ? ' open' : '');
+    const dash = rec.matchScore * 0.942;
+    card.innerHTML = `
+      <div class="rec-top">
+        <div class="rec-rank">#${i+1}</div>
+        <div class="rec-info">
+          <p class="rec-name">${rec.name}</p>
+          <p class="rec-reason">${rec.reason}</p>
+        </div>
+        <div class="rec-score">
+          <svg viewBox="0 0 36 36">
+            <circle cx="18" cy="18" r="15" fill="none" stroke="#1e2d3d" stroke-width="3"/>
+            <circle cx="18" cy="18" r="15" fill="none" stroke="#00d084" stroke-width="3"
+              stroke-dasharray="${dash} 94.2" stroke-linecap="round" transform="rotate(-90 18 18)"/>
+          </svg>
+          <span>${rec.matchScore}%</span>
+        </div>
+      </div>
+      ${expandedRec === i ? `
+      <div class="rec-detail">
+        <p class="rec-desc">${rec.description}</p>
+        ${hasMedicalRisk(rec.description) ? '<p class="disclaimer">⚠ Consult a healthcare provider before use.</p>' : ''}
+        <div class="rec-meta">
+          <span class="meta-tag">Confidence: ${rec.confidence}%</span>
+          <span class="meta-tag">Strategy: ${rec.strategy || currentStrategy}</span>
+          ${rec.confidence < 50 ? '<span class="meta-tag low-conf">Low confidence</span>' : ''}
+        </div>
+      </div>` : ''}`;
+    card.onclick = () => {
+      expandedRec = expandedRec === i ? null : i;
+      renderRecs(recs);
+    };
+    list.appendChild(card);
+  });
+
+  document.getElementById('pmPanel').style.display = 'block';
+}
+
+function switchStrategy(s) {
+  currentStrategy = s;
+  document.querySelectorAll('.strat-btn').forEach(b => {
+    b.className = 'strat-btn' + (b.textContent === s ? ' on' : '');
+  });
+  if (currentProfile) {
+    expandedRec = null;
+    getRecs(currentProfile);
+  }
+}
+
+async function sendChat() {
+  const input = document.getElementById('chatInput');
+  const query = input.value.trim();
+  if (!query || !currentProfile) return;
+
+  const btn = document.getElementById('chatBtn');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span>';
+  input.value = '';
+
+  const safe = sanitize(query);
+  const system = `You are a wellness product assistant for iHerb. Only discuss supplements. Never diagnose or prescribe. Be concise — max 3 sentences. If unsafe or off-topic, say so briefly.`;
+  const user = `User (age ${currentProfile.age}, goals: ${currentProfile.goals}) asks: "${safe}". Suggest a supplement and explain why in one sentence.`;
+
+  try {
+    const reply = await callClaude(system, user, 350);
+    const replyEl = document.getElementById('chatReply');
+    replyEl.style.display = 'block';
+    replyEl.innerHTML = `<div class="chat-reply">
+      <span class="chat-badge">AI Response</span>
+      <p>${reply}</p>
+      <p class="chat-note">↑ Updating recs to reflect your query.</p>
+    </div>`;
+
+    // Update recs with chat intent
+    const updatedProfile = {...currentProfile, goals: `${currentProfile.goals}, ${query}`};
+    expandedRec = null;
+    await getRecs(updatedProfile);
+  } catch(e) {
+    showError('Chat failed: ' + e.message);
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = '→';
+  }
+}
+
+function switchPM(tab, el) {
+  document.querySelectorAll('.pm-tab').forEach(b => b.className = 'pm-tab');
+  el.className = 'pm-tab on';
+  renderPM(tab);
+}
+
+function renderPM(tab) {
+  const rows = PM_DATA[tab];
+  document.getElementById('pmContent').innerHTML = rows.map(r => `
+    <div class="pm-row">
+      <span class="pm-label">${r.label}</span>
+      <div>${r.value ? `<p class="pm-value">${r.value}</p>` : ''}${r.detail ? `<p class="pm-detail">${r.detail}</p>` : ''}</div>
+    </div>`).join('');
+}
+</script>
+</body>
+</html>
