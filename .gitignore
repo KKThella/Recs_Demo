@@ -11,8 +11,8 @@ yarn-error.log*
 .env.test.local
 .env.production.local
 
-# Build outputs
-build/
+# Build outputs (commented out since we're serving from root for GitHub Pages)
+# build/
 dist/
 
 # IDE files
