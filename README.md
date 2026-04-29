@@ -1,6 +1,14 @@
-# iHerb AI Recommendations Demo
+# AI Recommendations Demo
 
 An AI-powered supplement recommendation system built with React, Express, and Anthropic's Claude.
+
+> 🚀 **[Live Demo → kkthella.github.io/Recs_Demo](https://kkthella.github.io/Recs_Demo/)**
+
+AI-powered personalized supplement recommendation engine built to demonstrate 
+GenAI product thinking.
+
+**To try the demo:** Get a free API key at [console.anthropic.com](https://console.anthropic.com) and paste it on the first screen.
+
 
 ## 🚀 Features
 
