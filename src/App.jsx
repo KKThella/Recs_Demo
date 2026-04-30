@@ -16,6 +16,9 @@ export default function App() {
   const [chatLoading, setChatLoading] = useState(false);
   const [chatReply, setChatReply] = useState("");
   const [error, setError] = useState("");
+  const [feedbackData, setFeedbackData] = useState({});
+  const [compareMode, setCompareMode] = useState(false);
+  const [compareRecs, setCompareRecs] = useState({});
 
   const handleKeySet = () => {
     if (!apiKey.trim()) return;
@@ -69,6 +72,39 @@ export default function App() {
     }
   };
 
+  const handleFeedback = (recName, vote) => {
+    setFeedbackData(prev => ({ ...prev, [recName]: vote }));
+  };
+
+  const handleCompareToggle = async () => {
+    const newCompareMode = !compareMode;
+    setCompareMode(newCompareMode);
+
+    if (newCompareMode && profile) {
+      setRecsLoading(true);
+      setError("");
+      try {
+        const strategies = ["hybrid", "content-based", "collaborative"];
+        const results = {};
+
+        await Promise.all(strategies.map(async (s) => {
+          try {
+            const data = await fetchRecs(profile, s);
+            results[s] = data.recs;
+          } catch (e) {
+            results[s] = [];
+          }
+        }));
+
+        setCompareRecs(results);
+      } catch (e) {
+        setError("Failed to fetch comparison data.");
+      } finally {
+        setRecsLoading(false);
+      }
+    }
+  };
+
   if (!keySet) return (
     <div className="app key-screen">
       <div className="key-card">
@@ -99,7 +135,17 @@ export default function App() {
           <ChatSearch onChat={handleChat} loading={chatLoading} lastReply={chatReply} />
         </div>
         <div className="col-right">
-          <RecsPanel recs={recs} loading={recsLoading} strategy={strategy} onStrategyChange={handleStrategy} />
+          <RecsPanel
+            recs={recs}
+            loading={recsLoading}
+            strategy={strategy}
+            onStrategyChange={handleStrategy}
+            feedbackData={feedbackData}
+            onFeedback={handleFeedback}
+            compareMode={compareMode}
+            onCompareToggle={handleCompareToggle}
+            compareRecs={compareRecs}
+          />
           {(recs || recsLoading) && <PMNarrative />}
         </div>
       </main>
