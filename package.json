@@ -2,6 +2,7 @@
   "name": "iherb-recs-demo",
   "version": "1.0.0",
   "private": true,
+  "homepage": "https://kkthella.github.io/Recs_Demo",
   "dependencies": {
     "cors": "^2.8.6",
     "dotenv": "^17.4.2",
