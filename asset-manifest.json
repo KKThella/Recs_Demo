@@ -1,0 +1,13 @@
+{
+  "files": {
+    "main.css": "/Recs_Demo/static/css/main.e1b8c975.css",
+    "main.js": "/Recs_Demo/static/js/main.221f1276.js",
+    "index.html": "/Recs_Demo/index.html",
+    "main.e1b8c975.css.map": "/Recs_Demo/static/css/main.e1b8c975.css.map",
+    "main.221f1276.js.map": "/Recs_Demo/static/js/main.221f1276.js.map"
+  },
+  "entrypoints": [
+    "static/css/main.e1b8c975.css",
+    "static/js/main.221f1276.js"
+  ]
+}
