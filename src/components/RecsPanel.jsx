@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { hasMedialRisk } from "../api/claude";
+import { hasMedicalRisk } from "../api/claude";
 
 const strategies = ["hybrid", "content-based", "collaborative"];
 
@@ -12,7 +12,8 @@ export default function RecsPanel({
   onFeedback,
   compareMode,
   onCompareToggle,
-  compareRecs
+  compareRecs,
+  conversationalMode
 }) {
   const [expanded, setExpanded] = useState(null);
 
@@ -51,7 +52,7 @@ export default function RecsPanel({
           {expanded === i && (
             <div className="rec-detail">
               <p className="rec-desc">{rec.description}</p>
-              {hasMedialRisk(rec.description) && (
+              {hasMedicalRisk(rec.description) && (
                 <p className="disclaimer">⚠ Consult a healthcare provider before use.</p>
               )}
               <div className="rec-meta">
@@ -143,31 +144,36 @@ export default function RecsPanel({
     <div className="recs-panel">
       <div className="recs-header">
         <h2 className="panel-title">Your Recommendations</h2>
-        <div className="strategy-toggle">
-          {strategies.map(s => (
-            <button key={s} className={`strat-btn ${strategy === s ? "strat-on" : ""}`}
-              onClick={() => onStrategyChange(s)}>
-              {s}
-            </button>
-          ))}
-        </div>
+        {!conversationalMode && (
+          <div className="strategy-toggle">
+            {strategies.map(s => (
+              <button key={s} className={`strat-btn ${strategy === s ? "strat-on" : ""}`}
+                onClick={() => onStrategyChange(s)}>
+                {s}
+              </button>
+            ))}
+          </div>
+        )}
       </div>
-      <p className="strategy-note">
-        {strategy === "hybrid" && "Combining your profile attributes + behavior patterns from similar users."}
-        {strategy === "content-based" && "Matching purely on your stated goals, diet, and restrictions."}
-        {strategy === "collaborative" && "Based on users with similar profiles and purchase history."}
-      </p>
+      {!conversationalMode && (
+        <>
+          <p className="strategy-note">
+            {strategy === "hybrid" && "Combining your profile attributes + behavior patterns from similar users."}
+            {strategy === "content-based" && "Matching purely on your stated goals, diet, and restrictions."}
+            {strategy === "collaborative" && "Based on users with similar profiles and purchase history."}
+          </p>
+          <div className="compare-toggle">
+            <span className="compare-label">Compare all 3 strategies side-by-side</span>
+            <label className="toggle-wrap">
+              <input type="checkbox" checked={compareMode} onChange={onCompareToggle} />
+              <div className="t-track"></div>
+              <div className="t-thumb"></div>
+            </label>
+          </div>
+        </>
+      )}
 
-      <div className="compare-toggle">
-        <span className="compare-label">Compare all 3 strategies side-by-side</span>
-        <label className="toggle-wrap">
-          <input type="checkbox" checked={compareMode} onChange={onCompareToggle} />
-          <div className="t-track"></div>
-          <div className="t-thumb"></div>
-        </label>
-      </div>
-
-      {compareMode ? renderCompareView() : renderRecsList(recs)}
+      {compareMode && !conversationalMode ? renderCompareView() : renderRecsList(recs)}
       {!compareMode && renderFeedbackSummary()}
     </div>
   );

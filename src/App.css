@@ -84,7 +84,7 @@ body { background: var(--bg); color: var(--text); font-family: 'DM Sans', sans-s
 .rec-rank { font-family: 'DM Serif Display', serif; font-size: 20px; color: var(--text2); width: 28px; flex-shrink: 0; }
 .rec-info { flex: 1; min-width: 0; }
 .rec-name { font-weight: 500; font-size: 14px; margin-bottom: 2px; }
-.rec-reason { font-size: 12px; color: var(--text2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.rec-reason { font-size: 12px; color: var(--text2); white-space: normal; overflow: hidden; text-overflow: ellipsis; }
 .rec-score-wrap { flex-shrink: 0; }
 .rec-score { position: relative; width: 44px; height: 44px; }
 .rec-score svg { width: 100%; height: 100%; }
@@ -124,8 +124,9 @@ body { background: var(--bg); color: var(--text); font-family: 'DM Sans', sans-s
 .toggle-wrap input:checked + .t-track { background: rgba(0, 208, 132, 0.3); }
 .toggle-wrap input:checked ~ .t-thumb { left: 19px; background: var(--accent); }
 
-.compare-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
-.compare-col { background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; padding: 12px; }
+.compare-view { overflow-x: auto; }
+.compare-grid { display: grid; grid-template-columns: repeat(3, minmax(160px, 1fr)); gap: 8px; min-width: 0; }
+.compare-col { background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; padding: 12px; min-width: 0; }
 .compare-col-title { font-size: 11px; font-weight: 600; color: var(--accent); text-transform: uppercase; letter-spacing: .05em; margin-bottom: 8px; text-align: center; padding-bottom: 6px; border-bottom: 1px solid var(--border); }
 .compare-item { font-size: 12px; padding: 6px 0; border-bottom: 1px solid var(--border); display: flex; align-items: flex-start; gap: 6px; }
 .compare-item:last-child { border-bottom: none; }
@@ -147,6 +148,74 @@ body { background: var(--bg); color: var(--text); font-family: 'DM Sans', sans-s
 .chat-badge { font-size: 10px; font-weight: 500; color: var(--accent); text-transform: uppercase; letter-spacing: .08em; display: block; margin-bottom: 6px; }
 .chat-reply p { font-size: 13px; line-height: 1.55; }
 .chat-note { font-size: 11px; color: var(--text2); margin-top: 8px !important; font-style: italic; }
+
+/* ── Mode toggle bar ── */
+.mode-bar { display: flex; align-items: center; gap: 8px; margin-bottom: 20px; flex-wrap: wrap; }
+.mode-btn { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 8px 16px; font-size: 13px; font-weight: 500; color: var(--text2); cursor: pointer; font-family: inherit; display: flex; align-items: center; gap: 6px; transition: all .15s; }
+.mode-btn:hover { border-color: var(--accent); color: var(--text); }
+.mode-on { background: #1a3a1e; border-color: var(--accent); color: var(--accent); }
+.mode-badge { background: var(--accent); color: #000; font-size: 9px; font-weight: 700; padding: 2px 6px; border-radius: 10px; letter-spacing: .04em; }
+.mode-hint { font-size: 11px; color: var(--text2); font-style: italic; margin-left: 4px; }
+
+/* ── Conversational chat ── */
+.conv-container { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); display: flex; flex-direction: column; gap: 0; overflow: hidden; }
+
+.conv-messages { padding: 20px 16px 12px; display: flex; flex-direction: column; gap: 14px; max-height: 480px; overflow-y: auto; }
+.conv-messages::-webkit-scrollbar { width: 4px; }
+.conv-messages::-webkit-scrollbar-track { background: transparent; }
+.conv-messages::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+
+.conv-row { display: flex; gap: 10px; align-items: flex-start; }
+.conv-row-user { flex-direction: row-reverse; }
+
+.conv-avatar { width: 32px; height: 32px; border-radius: 50%; background: var(--accent2); color: #fff; font-size: 11px; font-weight: 700; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+
+.conv-bubble { max-width: 82%; border-radius: 14px; padding: 11px 14px; font-size: 13px; line-height: 1.55; }
+.conv-bubble-assistant { background: var(--surface2); border: 1px solid var(--border); border-top-left-radius: 4px; }
+.conv-bubble-user { background: #1a3a1e; border: 1px solid var(--accent2); color: var(--text); border-top-right-radius: 4px; }
+
+/* Typing indicator */
+.conv-typing { display: flex; align-items: center; gap: 5px; padding: 14px 16px; }
+.conv-typing span { width: 7px; height: 7px; background: var(--text2); border-radius: 50%; animation: bounce 1.2s ease infinite; }
+.conv-typing span:nth-child(2) { animation-delay: .2s; }
+.conv-typing span:nth-child(3) { animation-delay: .4s; }
+@keyframes bounce { 0%, 80%, 100% { transform: translateY(0); opacity: .4; } 40% { transform: translateY(-6px); opacity: 1; } }
+
+/* Inline recs in chat */
+.conv-recs { margin-top: 10px; border-top: 1px solid var(--border); padding-top: 10px; display: flex; flex-direction: column; gap: 8px; }
+.conv-recs-label { font-size: 10px; font-weight: 700; color: var(--accent); text-transform: uppercase; letter-spacing: .08em; margin-bottom: 2px; }
+.conv-rec-card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 10px 12px; }
+.conv-rec-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px; gap: 8px; }
+.conv-rec-info { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+.conv-rec-name { font-size: 12px; font-weight: 600; color: var(--text); }
+.conv-rec-tag { font-size: 10px; background: rgba(63,185,80,.15); color: var(--accent); border-radius: 10px; padding: 1px 7px; font-weight: 600; }
+.conv-rec-score { font-size: 11px; font-weight: 700; color: var(--accent); flex-shrink: 0; }
+.conv-rec-reason { font-size: 11px; color: var(--text2); line-height: 1.4; margin-bottom: 8px; }
+.conv-add-btn { font-size: 11px; font-weight: 600; background: var(--surface2); border: 1px solid var(--border); border-radius: 6px; padding: 4px 10px; cursor: pointer; color: var(--text2); font-family: inherit; transition: all .15s; }
+.conv-add-btn:hover:not(.added) { border-color: var(--accent); color: var(--accent); }
+.conv-add-btn.added { background: rgba(63,185,80,.12); border-color: var(--accent); color: var(--accent); cursor: default; }
+.conv-panel-note { font-size: 10px; color: var(--text2); font-style: italic; margin-top: 4px; }
+
+/* Input row */
+.conv-input-row { display: flex; gap: 8px; padding: 12px 16px; border-top: 1px solid var(--border); background: var(--surface); }
+.conv-input { flex: 1; background: var(--surface2); border: 1px solid var(--border); border-radius: var(--radius); padding: 10px 14px; color: var(--text); font-size: 14px; font-family: inherit; }
+.conv-input:focus { outline: none; border-color: var(--accent); }
+.conv-input:disabled { opacity: .5; }
+.conv-send { background: var(--accent2); color: #fff; border: none; border-radius: var(--radius); padding: 10px 18px; cursor: pointer; font-size: 16px; flex-shrink: 0; }
+.conv-send:hover:not(:disabled) { background: var(--accent); }
+.conv-send:disabled { opacity: .5; cursor: not-allowed; }
+.conv-reset { background: var(--surface2); border: 1px solid var(--border); border-radius: var(--radius); padding: 10px 14px; cursor: pointer; color: var(--text2); font-size: 16px; font-family: inherit; flex-shrink: 0; }
+.conv-reset:hover { border-color: var(--danger); color: var(--danger); }
+.conv-error { font-size: 12px; color: var(--danger); text-align: center; padding: 0 16px; }
+
+/* Shopping list */
+.conv-shoplist { margin: 0 16px 16px; background: var(--surface2); border: 1px solid var(--accent2); border-radius: 8px; padding: 12px 14px; }
+.conv-shoplist-title { font-size: 12px; font-weight: 700; color: var(--accent); margin-bottom: 8px; }
+.conv-shoplist-item { display: flex; align-items: center; gap: 8px; font-size: 12px; padding: 4px 0; border-bottom: 1px solid var(--border); }
+.conv-shoplist-item:last-of-type { border-bottom: none; }
+.conv-shoplist-dot { color: var(--accent); font-size: 16px; line-height: 1; }
+.conv-shoplist-score { margin-left: auto; font-size: 11px; color: var(--text2); }
+.conv-shoplist-note { font-size: 10px; color: var(--text2); font-style: italic; margin-top: 8px; }
 
 .pm-header { margin-bottom: 12px; }
 .pm-tabs { display: flex; gap: 4px; margin-bottom: 16px; }

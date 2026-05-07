@@ -11,9 +11,15 @@ yarn-error.log*
 .env.test.local
 .env.production.local
 
-# Build outputs (commented out since we're serving from root for GitHub Pages)
-# build/
+# Build outputs — gh-pages deploys from the build/ folder to a separate branch
+build/
 dist/
+
+# Stale root-level artifacts from old vanilla JS build
+index.html
+iherb-recs-demo.html
+asset-manifest.json
+static/
 
 # IDE files
 .vscode/

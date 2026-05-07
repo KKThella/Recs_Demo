@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import ProfileForm from "./components/ProfileForm";
 import RecsPanel from "./components/RecsPanel";
 import ChatSearch from "./components/ChatSearch";
+import ConversationalChat from "./components/ConversationalChat";
 import PMNarrative from "./components/PMNarrative";
 import { fetchRecs, fetchChatRec } from "./api/claude";
 import "./App.css";
@@ -9,6 +10,7 @@ import "./App.css";
 export default function App() {
   const [apiKey, setApiKey] = useState("");
   const [keySet, setKeySet] = useState(!!process.env.REACT_APP_ANTHROPIC_API_KEY);
+  const [mode, setMode] = useState("conversational"); // "profile" | "conversational"
   const [profile, setProfile] = useState(null);
   const [recs, setRecs] = useState(null);
   const [strategy, setStrategy] = useState("hybrid");
@@ -72,6 +74,20 @@ export default function App() {
     }
   };
 
+  const handleConvRecs = (convRecs) => {
+    if (!convRecs) { setRecs(null); return; }
+    // Map conversational recs to the panel format
+    const mapped = convRecs.map(r => ({
+      name: r.name,
+      matchScore: r.matchScore,
+      reason: r.reason,
+      description: r.reason,
+      confidence: r.confidence,
+      strategy: "conversational"
+    }));
+    setRecs(mapped);
+  };
+
   const handleFeedback = (recName, vote) => {
     setFeedbackData(prev => ({ ...prev, [recName]: vote }));
   };
@@ -79,14 +95,12 @@ export default function App() {
   const handleCompareToggle = async () => {
     const newCompareMode = !compareMode;
     setCompareMode(newCompareMode);
-
     if (newCompareMode && profile) {
       setRecsLoading(true);
       setError("");
       try {
         const strategies = ["hybrid", "content-based", "collaborative"];
         const results = {};
-
         await Promise.all(strategies.map(async (s) => {
           try {
             const data = await fetchRecs(profile, s);
@@ -95,7 +109,6 @@ export default function App() {
             results[s] = [];
           }
         }));
-
         setCompareRecs(results);
       } catch (e) {
         setError("Failed to fetch comparison data.");
@@ -127,12 +140,40 @@ export default function App() {
         <p className="header-sub">Personalized supplement discovery · Powered by generative AI</p>
       </header>
 
+      {/* Mode toggle */}
+      <div className="mode-bar">
+        <button
+          className={`mode-btn ${mode === "conversational" ? "mode-on" : ""}`}
+          onClick={() => setMode("conversational")}
+        >
+          💬 Conversational Shopping
+          {mode === "conversational" && <span className="mode-badge">NEW</span>}
+        </button>
+        <button
+          className={`mode-btn ${mode === "profile" ? "mode-on" : ""}`}
+          onClick={() => setMode("profile")}
+        >
+          📋 Profile Mode
+        </button>
+        <span className="mode-hint">
+          {mode === "conversational"
+            ? "AI guides you through discovery — no forms needed"
+            : "Fill your profile for instant recommendations"}
+        </span>
+      </div>
+
       {error && <div className="error-banner">⚠ {error}</div>}
 
       <main className="app-grid">
         <div className="col-left">
-          <ProfileForm onSubmit={handleProfile} loading={recsLoading} />
-          <ChatSearch onChat={handleChat} loading={chatLoading} lastReply={chatReply} />
+          {mode === "conversational" ? (
+            <ConversationalChat onRecsUpdate={handleConvRecs} />
+          ) : (
+            <>
+              <ProfileForm onSubmit={handleProfile} loading={recsLoading} />
+              <ChatSearch onChat={handleChat} loading={chatLoading} lastReply={chatReply} />
+            </>
+          )}
         </div>
         <div className="col-right">
           <RecsPanel
@@ -145,6 +186,7 @@ export default function App() {
             compareMode={compareMode}
             onCompareToggle={handleCompareToggle}
             compareRecs={compareRecs}
+            conversationalMode={mode === "conversational"}
           />
           {(recs || recsLoading) && <PMNarrative />}
         </div>
