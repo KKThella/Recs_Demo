@@ -16,10 +16,11 @@ build/
 dist/
 
 # Stale root-level artifacts from old vanilla JS build
-index.html
-iherb-recs-demo.html
-asset-manifest.json
-static/
+# Leading slash = only matches at repo root, not inside build/ output
+/index.html
+/iherb-recs-demo.html
+/asset-manifest.json
+/static/
 
 # IDE files
 .vscode/
